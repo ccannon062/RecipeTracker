@@ -24,7 +24,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
-    "src/pages/api/getData.js"
+    "src/pages/api/getData.ts"
   ],
   "exclude": ["node_modules"]
 }
