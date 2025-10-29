@@ -41,7 +41,97 @@ export default async function handler(
       res.status(500).json({ error: error.message });
     }
   } else if (req.method === "PUT") {
-    res.status(501).json({ error: "Not implemented yet" });
+    try {
+      const {
+        RecipeName,
+        RecipeDescription,
+        PrepTime,
+        CookTime,
+        Servings,
+        Instructions,
+        Photo_URL,
+        ingredients,
+      } = req.body;
+
+      if (
+        !RecipeName ||
+        PrepTime === undefined ||
+        CookTime === undefined ||
+        Servings === undefined ||
+        !Instructions
+      ) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const recipeResult = await query<Recipe[]>(
+        "SELECT RecipeID FROM RECIPE WHERE RecipeID = ?",
+        [RecipeID]
+      );
+
+      if (recipeResult.length === 0) {
+        return res.status(404).json({ error: "Recipe not found" });
+      }
+
+      const TotalTime = PrepTime + CookTime;
+
+      await query(
+        `UPDATE RECIPE 
+         SET RecipeName = ?, RecipeDescription = ?, PrepTime = ?, CookTime = ?, 
+             TotalTime = ?, Servings = ?, Instructions = ?, Photo_URL = ?, 
+             UpdatedAt = NOW()
+         WHERE RecipeID = ?`,
+        [
+          RecipeName,
+          RecipeDescription ?? null,
+          PrepTime,
+          CookTime,
+          TotalTime,
+          Servings,
+          Instructions,
+          Photo_URL ?? null,
+          RecipeID,
+        ]
+      );
+
+      if (ingredients && Array.isArray(ingredients)) {
+        await query("DELETE FROM RECIPE_INGREDIENTS WHERE RecipeID = ?", [
+          RecipeID,
+        ]);
+
+        if (ingredients.length > 0) {
+          for (const ingredient of ingredients) {
+            if (
+              !ingredient.IngredientID ||
+              ingredient.Quantity === undefined ||
+              !ingredient.Unit
+            ) {
+              console.error("Invalid ingredient:", ingredient);
+              continue;
+            }
+
+            await query(
+              `INSERT INTO RECIPE_INGREDIENTS 
+               (RecipeID, IngredientID, Quantity, Unit) 
+               VALUES (?, ?, ?, ?)`,
+              [
+                RecipeID,
+                ingredient.IngredientID,
+                ingredient.Quantity,
+                ingredient.Unit,
+              ]
+            );
+          }
+        }
+      }
+
+      res.status(200).json({
+        message: "Recipe updated successfully",
+        RecipeID: RecipeID,
+      });
+    } catch (error) {
+      console.error("PUT /api/recipes/[id] error:", error);
+      res.status(500).json({ error: error.message });
+    }
   } else if (req.method === "DELETE") {
     try {
       const recipeResult = await query<Recipe[]>(
