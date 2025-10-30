@@ -1,23 +1,33 @@
 import Link from "next/link";
+import { IoMdMenu } from "react-icons/io";
+import { useState } from "react";
 
 export default function Navbar() {
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav className="bg-[#344e41] text-white shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center py-4">
-          {/* Left: Logo/Brand */}
           <Link href="/">
-            <div className="text-2xl font-bold cursor-pointer hover:text-blue-100">
+            <div className="color-[#dad7cd] text-2xl font-bold cursor-pointer hover:">
               Recipe Tracker
             </div>
           </Link>
-
-          {/* Right: Navigation Links */}
-          <div className="flex gap-6">
-            <Link href="/">{/* Home link with styling */}</Link>
-            <Link href="/recipes/new">
-              {/* Add Recipe link with styling */}
+          <div className="hidden md:block flex gap-6">
+            <Link
+              className="hover:bg-[#a3b18a1a] p-2 pl-4 pr-4 rounded transition delay-100"
+              href="/"
+            >
+              Home
             </Link>
+            <Link
+              className="hover:bg-[#a3b18a1a] p-2 pl-4 pr-4 rounded transition delay-100"
+              href="/recipes/new"
+            >
+              Recipe
+            </Link>
+          </div>
+          <div className="md:hidden">
+            <IoMdMenu className="color-white cursor-pointer" size="2em" />
           </div>
         </div>
       </div>
