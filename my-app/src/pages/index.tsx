@@ -1,7 +1,21 @@
+import { useState, useEffect } from "react";
+
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <h1 className="text-4xl font-bold text-center pt-10">Recipe Tracker</h1>
-    </div>
-  );
+  // State for recipes, loading, error
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch recipes when component mounts
+  useEffect(() => {
+    // fetch('/api/recipes')
+    // set recipes state
+    // handle loading and errors
+  }, []);
+
+  // Render:
+  // - Show loading spinner if loading
+  // - Show error message if error
+  // - Show "No recipes yet" if recipes is empty
+  // - Show grid of recipe cards if recipes exist
 }
