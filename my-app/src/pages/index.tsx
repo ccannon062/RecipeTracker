@@ -58,7 +58,7 @@ export default function Home() {
           <Link key={recipe.RecipeID} href={`/recipes/${recipe.RecipeID}`}>
             <div
               key={recipe.RecipeID}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full flex flex-col"
             >
               <img
                 src={
