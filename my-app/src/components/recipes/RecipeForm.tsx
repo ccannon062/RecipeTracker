@@ -42,6 +42,28 @@ export default function RecipeForm({
     fetchIngredients();
   }, []);
 
+  useEffect(() => {
+    if (mode === "edit" && initialData) {
+      setFormData({
+        RecipeName: initialData.RecipeName || "",
+        RecipeDescription: initialData.RecipeDescription || "",
+        PrepTime: initialData.PrepTime || 0,
+        CookTime: initialData.CookTime || 0,
+        Servings: initialData.Servings || 0,
+        Photo_URL: initialData.Photo_URL || "",
+        Instructions: initialData.Instructions || "",
+        ingredients:
+          initialData.ingredients?.length > 0
+            ? initialData.ingredients.map((ing) => ({
+                IngredientID: ing.IngredientID,
+                Quantity: ing.Quantity,
+                Unit: ing.Unit,
+              }))
+            : [{ IngredientID: "", Quantity: "", Unit: "" }],
+      });
+    }
+  }, [mode, initialData]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     const processedValue =
@@ -238,7 +260,6 @@ export default function RecipeForm({
               className="w-24 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            {/* Unit */}
             <input
               type="text"
               value={ingredient.Unit}
@@ -247,10 +268,28 @@ export default function RecipeForm({
               }
               required
               placeholder="Unit"
+              list="unit-options"
               className="w-24 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            {/* Remove Button */}
+            <datalist id="unit-options">
+              <option value="cup" />
+              <option value="tbsp" />
+              <option value="tsp" />
+              <option value="oz" />
+              <option value="lb" />
+              <option value="g" />
+              <option value="kg" />
+              <option value="ml" />
+              <option value="L" />
+              <option value="whole" />
+              <option value="pinch" />
+              <option value="bunch" />
+              <option value="clove" />
+              <option value="can" />
+              <option value="package" />
+            </datalist>
+
             {formData.ingredients.length > 1 && (
               <button
                 type="button"
