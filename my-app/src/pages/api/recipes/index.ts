@@ -8,9 +8,39 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     try {
-      const results = await query<Recipe[]>(
-        "SELECT * FROM RECIPE ORDER BY CreatedAT DESC"
-      );
+      const { search, maxPrepTime, maxServings } = req.query;
+
+      let sql = "SELECT DISTINCT r.* FROM RECIPE r";
+      const params: any[] = [];
+      const conditions: string[] = [];
+
+      if (search) {
+        sql += ` LEFT JOIN RECIPE_INGREDIENTS ri ON r.RecipeID = ri.RecipeID
+                 LEFT JOIN INGREDIENT i ON ri.IngredientID = i.IngredientID`;
+        conditions.push(
+          "(r.RecipeName LIKE ? OR r.RecipeDescription LIKE ? OR i.IngredientName LIKE ?)"
+        );
+        const searchPattern = `%${search}%`;
+        params.push(searchPattern, searchPattern, searchPattern);
+      }
+
+      if (maxPrepTime) {
+        conditions.push("r.PrepTime <= ?");
+        params.push(parseInt(maxPrepTime as string));
+      }
+
+      if (maxServings) {
+        conditions.push("r.Servings <= ?");
+        params.push(parseInt(maxServings as string));
+      }
+
+      if (conditions.length > 0) {
+        sql += " WHERE " + conditions.join(" AND ");
+      }
+
+      sql += " ORDER BY r.CreatedAt DESC";
+
+      const results = await query<Recipe[]>(sql, params);
       res.status(200).json(results);
     } catch (error) {
       res.status(500).json({ error: error.message });
