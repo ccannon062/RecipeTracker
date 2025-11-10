@@ -8,6 +8,7 @@ export default function RecipeDetail() {
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
+  const [adjustedServings, setAdjustedServings] = useState(null);
 
   useEffect(() => {
     if (!id) return;
@@ -20,6 +21,7 @@ export default function RecipeDetail() {
         }
         const result = await response.json();
         setRecipe(result);
+        setAdjustedServings(result.Servings);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -47,6 +49,16 @@ export default function RecipeDetail() {
     } catch (error) {
       alert("Error deleting recipe: " + error.message);
     }
+  };
+
+  const getScaledQuantity = (originalQuantity) => {
+    if (!recipe || !adjustedServings) return originalQuantity;
+    const scalingRatio = adjustedServings / recipe.Servings;
+    const scaled = originalQuantity * scalingRatio;
+
+    // Round to 2 decimal places and remove unnecessary trailing zeros
+    const rounded = Math.round(scaled * 100) / 100;
+    return rounded % 1 === 0 ? rounded.toFixed(0) : rounded;
   };
 
   return error ? (
@@ -107,8 +119,36 @@ export default function RecipeDetail() {
               <span className="font-semibold">Total Time:</span>{" "}
               {recipe.TotalTime} min
             </div>
-            <div>
-              <span className="font-semibold">Servings:</span> {recipe.Servings}
+            <div className="flex items-center gap-3">
+              <span className="font-semibold">Servings:</span>
+              <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1">
+                <button
+                  onClick={() =>
+                    setAdjustedServings(Math.max(1, adjustedServings - 1))
+                  }
+                  className="text-gray-600 hover:text-gray-900 font-bold text-xl"
+                  disabled={adjustedServings <= 1}
+                >
+                  −
+                </button>
+                <span className="font-semibold min-w-[2rem] text-center">
+                  {adjustedServings}
+                </span>
+                <button
+                  onClick={() => setAdjustedServings(adjustedServings + 1)}
+                  className="text-gray-600 hover:text-gray-900 font-bold text-xl"
+                >
+                  +
+                </button>
+              </div>
+              {adjustedServings !== recipe.Servings && (
+                <button
+                  onClick={() => setAdjustedServings(recipe.Servings)}
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  Reset
+                </button>
+              )}
             </div>
           </div>
 
@@ -132,13 +172,19 @@ export default function RecipeDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6">
             <h2 className="text-2xl font-bold mb-4">Ingredients</h2>
+            {adjustedServings !== recipe.Servings && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+                Quantities adjusted for {adjustedServings} servings (original:{" "}
+                {recipe.Servings})
+              </div>
+            )}
             <ul className="space-y-2">
               {recipe.ingredients && recipe.ingredients.length > 0 ? (
                 recipe.ingredients.map((ingredient, index) => (
                   <li key={index} className="flex items-start">
                     <span className="text-blue-600 mr-2">•</span>
                     <span>
-                      {ingredient.Quantity} {ingredient.Unit}{" "}
+                      {getScaledQuantity(ingredient.Quantity)} {ingredient.Unit}{" "}
                       {ingredient.IngredientName}
                     </span>
                   </li>
