@@ -11,6 +11,7 @@ export default function Home() {
   const [maxPrepTime, setMaxPrepTime] = useState("");
   const [maxServings, setMaxServings] = useState("");
   const [sortBy, setSortBy] = useState("newest");
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -47,6 +48,35 @@ export default function Home() {
 
     return () => clearTimeout(debounceTimer);
   }, [searchTerm, maxPrepTime, maxServings, sortBy, initialLoad]);
+
+  useEffect(() => {
+    const fetchRecentlyViewed = async () => {
+      const recentIds = JSON.parse(
+        localStorage.getItem("recentlyViewed") || "[]"
+      );
+      if (recentIds.length === 0) {
+        setRecentlyViewed([]);
+        return;
+      }
+
+      try {
+        const recentRecipes = await Promise.all(
+          recentIds.slice(0, 5).map(async (id) => {
+            const response = await fetch(`/api/recipes/${id}`);
+            if (response.ok) {
+              return await response.json();
+            }
+            return null;
+          })
+        );
+        setRecentlyViewed(recentRecipes.filter((recipe) => recipe !== null));
+      } catch (error) {
+        console.error("Error fetching recently viewed recipes:", error);
+      }
+    };
+
+    fetchRecentlyViewed();
+  }, []);
 
   if (error) {
     return (
@@ -87,12 +117,42 @@ export default function Home() {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">All Recipes</h1>
 
-      <div className="mb-8 bg-white rounded-lg shadow-md p-6">
+      {recentlyViewed.length > 0 && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-4">Recently Viewed</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {recentlyViewed.map((recipe) => (
+              <Link key={recipe.RecipeID} href={`/recipes/${recipe.RecipeID}`}>
+                <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer border border-gray-200">
+                  <img
+                    src={
+                      recipe.Photo_URL ||
+                      "https://via.placeholder.com/300x200?text=No+Image"
+                    }
+                    alt={recipe.RecipeName}
+                    className="w-full h-32 object-cover"
+                  />
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm line-clamp-2 text-[#344e41]">
+                      {recipe.RecipeName}
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      {recipe.TotalTime} min
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mb-8 bg-white rounded-lg shadow-md p-6 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-4">
             <div className="relative">
               <IoSearch
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#588157]"
                 size={20}
               />
               <input
@@ -100,13 +160,13 @@ export default function Home() {
                 placeholder="Search recipes by name or ingredients..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#344e41] focus:border-transparent outline-none"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#588157] focus:border-transparent outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#344e41] mb-2">
               Max Prep Time (min)
             </label>
             <input
@@ -115,11 +175,11 @@ export default function Home() {
               value={maxPrepTime}
               onChange={(e) => setMaxPrepTime(e.target.value)}
               min="0"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#344e41] focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#588157] focus:border-transparent outline-none"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#344e41] mb-2">
               Max Servings
             </label>
             <input
@@ -128,18 +188,18 @@ export default function Home() {
               value={maxServings}
               onChange={(e) => setMaxServings(e.target.value)}
               min="0"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#344e41] focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#588157] focus:border-transparent outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#344e41] mb-2">
               Sort By
             </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#344e41] focus:border-transparent outline-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#588157] focus:border-transparent outline-none"
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -160,7 +220,7 @@ export default function Home() {
                 setMaxServings("");
                 setSortBy("newest");
               }}
-              className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              className="w-full px-4 py-2 bg-[#a3b18a] text-white rounded-lg hover:bg-[#588157] transition-colors"
             >
               Clear Filters
             </button>
@@ -171,7 +231,7 @@ export default function Home() {
       {loading ? (
         <div className="flex justify-center items-center py-12">
           <svg
-            className="size-8 animate-spin text-[#344e41]"
+            className="size-8 animate-spin text-[#588157]"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
@@ -197,7 +257,7 @@ export default function Home() {
             <Link key={recipe.RecipeID} href={`/recipes/${recipe.RecipeID}`}>
               <div
                 key={recipe.RecipeID}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full flex flex-col"
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full flex flex-col border border-gray-200"
               >
                 <img
                   src={
@@ -208,13 +268,13 @@ export default function Home() {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-4">
-                  <h2 className="text-xl font-bold mb-2">
+                  <h2 className="text-xl font-bold mb-2 text-[#344e41]">
                     {recipe.RecipeName}
                   </h2>
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                     {recipe.RecipeDescription}
                   </p>
-                  <div className="flex justify-between text-sm text-gray-500">
+                  <div className="flex justify-between text-sm text-gray-600">
                     <span>⏱️ {recipe.TotalTime} min</span>
                     <span>{recipe.Servings} servings</span>
                   </div>
@@ -225,7 +285,7 @@ export default function Home() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">
+          <p className="text-gray-600 text-lg">
             No recipes found matching your filters.
           </p>
           <button
@@ -235,7 +295,7 @@ export default function Home() {
               setMaxServings("");
               setSortBy("newest");
             }}
-            className="mt-4 px-6 py-2 bg-[#344e41] text-white rounded-lg hover:bg-[#2a3e33] transition-colors"
+            className="mt-4 px-6 py-2 bg-[#344e41] text-white rounded-lg hover:bg-[#588157] transition-colors"
           >
             Clear All Filters
           </button>

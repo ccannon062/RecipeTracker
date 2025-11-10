@@ -22,6 +22,15 @@ export default function RecipeDetail() {
         const result = await response.json();
         setRecipe(result);
         setAdjustedServings(result.Servings);
+
+        const recentlyViewed = JSON.parse(
+          localStorage.getItem("recentlyViewed") || "[]"
+        );
+        const updatedViewed = [
+          id,
+          ...recentlyViewed.filter((recipeId) => recipeId !== id),
+        ].slice(0, 10);
+        localStorage.setItem("recentlyViewed", JSON.stringify(updatedViewed));
       } catch (error) {
         setError(error.message);
       } finally {
@@ -55,8 +64,6 @@ export default function RecipeDetail() {
     if (!recipe || !adjustedServings) return originalQuantity;
     const scalingRatio = adjustedServings / recipe.Servings;
     const scaled = originalQuantity * scalingRatio;
-
-    // Round to 2 decimal places and remove unnecessary trailing zeros
     const rounded = Math.round(scaled * 100) / 100;
     return rounded % 1 === 0 ? rounded.toFixed(0) : rounded;
   };
@@ -101,7 +108,7 @@ export default function RecipeDetail() {
         />
       </div>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
           <h1 className="text-4xl font-bold mb-4">{recipe.RecipeName}</h1>
           <p className="text-gray-600 text-lg mb-6">
             {recipe.RecipeDescription}
@@ -121,22 +128,22 @@ export default function RecipeDetail() {
             </div>
             <div className="flex items-center gap-3">
               <span className="font-semibold">Servings:</span>
-              <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-1">
+              <div className="flex items-center gap-2 bg-[#dad7cd] rounded-lg px-3 py-1">
                 <button
                   onClick={() =>
                     setAdjustedServings(Math.max(1, adjustedServings - 1))
                   }
-                  className="text-gray-600 hover:text-gray-900 font-bold text-xl"
+                  className="text-[#344e41] hover:text-[#588157] font-bold text-xl"
                   disabled={adjustedServings <= 1}
                 >
                   −
                 </button>
-                <span className="font-semibold min-w-[2rem] text-center">
+                <span className="font-semibold min-w-[2rem] text-center text-[#344e41]">
                   {adjustedServings}
                 </span>
                 <button
                   onClick={() => setAdjustedServings(adjustedServings + 1)}
-                  className="text-gray-600 hover:text-gray-900 font-bold text-xl"
+                  className="text-[#344e41] hover:text-[#588157] font-bold text-xl"
                 >
                   +
                 </button>
@@ -144,19 +151,17 @@ export default function RecipeDetail() {
               {adjustedServings !== recipe.Servings && (
                 <button
                   onClick={() => setAdjustedServings(recipe.Servings)}
-                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  className="text-sm text-[#588157] hover:text-[#344e41] underline"
                 >
                   Reset
                 </button>
               )}
             </div>
           </div>
-
-          {/* Action Buttons */}
           <div className="flex gap-4">
             <button
               onClick={() => router.push(`/recipes/${id}/edit`)}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+              className="bg-[#588157] text-white px-6 py-2 rounded hover:bg-[#344e41] transition"
             >
               Edit Recipe
             </button>
@@ -170,10 +175,10 @@ export default function RecipeDetail() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-4">Ingredients</h2>
+          <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h2 className="text-2xl font-bold mb-4 text-[#344e41]">Ingredients</h2>
             {adjustedServings !== recipe.Servings && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+              <div className="mb-4 p-3 bg-[#dad7cd] border border-[#a3b18a] rounded-lg text-sm text-[#344e41]">
                 Quantities adjusted for {adjustedServings} servings (original:{" "}
                 {recipe.Servings})
               </div>
@@ -182,7 +187,7 @@ export default function RecipeDetail() {
               {recipe.ingredients && recipe.ingredients.length > 0 ? (
                 recipe.ingredients.map((ingredient, index) => (
                   <li key={index} className="flex items-start">
-                    <span className="text-blue-600 mr-2">•</span>
+                    <span className="text-[#588157] mr-2">•</span>
                     <span>
                       {getScaledQuantity(ingredient.Quantity)} {ingredient.Unit}{" "}
                       {ingredient.IngredientName}
@@ -194,8 +199,8 @@ export default function RecipeDetail() {
               )}
             </ul>
           </div>
-          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold mb-4">Instructions</h2>
+          <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <h2 className="text-2xl font-bold mb-4 text-[#344e41]">Instructions</h2>
             <div className="prose max-w-none">
               <p className="whitespace-pre-line text-gray-700 leading-relaxed">
                 {recipe.Instructions}

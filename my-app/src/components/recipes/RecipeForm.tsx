@@ -114,14 +114,14 @@ export default function RecipeForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md"
+      className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200"
     >
-      <h2 className="text-3xl font-bold mb-6">
+      <h2 className="text-3xl font-bold mb-6 text-[#344e41]">
         {mode === "create" ? "Create New Recipe" : "Edit Recipe"}
       </h2>
 
       <div className="mb-4">
-        <label className="block text-gray-700 font-semibold mb-2">
+        <label className="block text-[#344e41] font-semibold mb-2">
           Recipe Name *
         </label>
         <input
@@ -130,13 +130,13 @@ export default function RecipeForm({
           value={formData.RecipeName}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           placeholder="e.g., Chocolate Chip Cookies"
         />
       </div>
 
       <div className="mb-4">
-        <label className="block text-gray-700 font-semibold mb-2">
+        <label className="block text-[#344e41] font-semibold mb-2">
           Description
         </label>
         <textarea
@@ -144,14 +144,14 @@ export default function RecipeForm({
           value={formData.RecipeDescription}
           onChange={handleChange}
           rows={3}
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           placeholder="Brief description of your recipe"
         />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
-          <label className="block text-gray-700 font-semibold mb-2">
+          <label className="block text-[#344e41] font-semibold mb-2">
             Prep Time (minutes) *
           </label>
           <input
@@ -161,12 +161,12 @@ export default function RecipeForm({
             onChange={handleChange}
             required
             min="0"
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           />
         </div>
 
         <div>
-          <label className="block text-gray-700 font-semibold mb-2">
+          <label className="block text-[#344e41] font-semibold mb-2">
             Cook Time (minutes) *
           </label>
           <input
@@ -176,12 +176,12 @@ export default function RecipeForm({
             onChange={handleChange}
             required
             min="0"
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           />
         </div>
 
         <div>
-          <label className="block text-gray-700 font-semibold mb-2">
+          <label className="block text-[#344e41] font-semibold mb-2">
             Servings *
           </label>
           <input
@@ -191,13 +191,13 @@ export default function RecipeForm({
             onChange={handleChange}
             required
             min="1"
-            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           />
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block text-gray-700 font-semibold mb-2">
+        <label className="block text-[#344e41] font-semibold mb-2">
           Photo URL
         </label>
         <input
@@ -205,13 +205,13 @@ export default function RecipeForm({
           name="Photo_URL"
           value={formData.Photo_URL}
           onChange={handleChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           placeholder="https://example.com/image.jpg"
         />
       </div>
 
       <div className="mb-6">
-        <label className="block text-gray-700 font-semibold mb-2">
+        <label className="block text-[#344e41] font-semibold mb-2">
           Instructions *
         </label>
         <textarea
@@ -220,13 +220,13 @@ export default function RecipeForm({
           onChange={handleChange}
           required
           rows={8}
-          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           placeholder="Step-by-step cooking instructions..."
         />
       </div>
 
       <div className="mb-6">
-        <label className="block text-gray-700 font-semibold mb-2">
+        <label className="block text-[#344e41] font-semibold mb-2">
           Ingredients *
         </label>
 
@@ -238,7 +238,7 @@ export default function RecipeForm({
                 handleIngredientChange(index, "IngredientID", e.target.value)
               }
               required
-              className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
             >
               <option value="">Select ingredient...</option>
               {availableIngredients.map((ing) => (
@@ -257,7 +257,7 @@ export default function RecipeForm({
               min="0"
               step="0.01"
               placeholder="Qty"
-              className="w-24 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-24 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
             />
 
             <input
@@ -269,7 +269,7 @@ export default function RecipeForm({
               required
               placeholder="Unit"
               list="unit-options"
-              className="w-24 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-24 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
             />
 
             <datalist id="unit-options">
@@ -304,7 +304,7 @@ export default function RecipeForm({
         <button
           type="button"
           onClick={addIngredient}
-          className="mt-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="mt-2 px-4 py-2 bg-[#588157] text-white rounded hover:bg-[#344e41]"
         >
           + Add Ingredient
         </button>
@@ -312,7 +312,7 @@ export default function RecipeForm({
       <div className="flex gap-4">
         <button
           type="submit"
-          className="flex-1 bg-[#344e41] text-white py-3 rounded-lg font-semibold hover:bg-[#344e41c8] transition"
+          className="flex-1 bg-[#344e41] text-white py-3 rounded-lg font-semibold hover:bg-[#588157] transition"
         >
           {mode === "create" ? "Create Recipe" : "Update Recipe"}
         </button>
@@ -320,7 +320,7 @@ export default function RecipeForm({
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="px-6 bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400 transition"
+          className="px-6 bg-[#a3b18a] text-white py-3 rounded-lg font-semibold hover:bg-[#588157] transition"
         >
           Cancel
         </button>
