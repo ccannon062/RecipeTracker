@@ -10,6 +10,7 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [maxPrepTime, setMaxPrepTime] = useState("");
   const [maxServings, setMaxServings] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -21,6 +22,7 @@ export default function Home() {
         if (searchTerm) params.append("search", searchTerm);
         if (maxPrepTime) params.append("maxPrepTime", maxPrepTime);
         if (maxServings) params.append("maxServings", maxServings);
+        if (sortBy) params.append("sortBy", sortBy);
 
         const url = `/api/recipes${
           params.toString() ? `?${params.toString()}` : ""
@@ -44,7 +46,7 @@ export default function Home() {
     }, 300);
 
     return () => clearTimeout(debounceTimer);
-  }, [searchTerm, maxPrepTime, maxServings, initialLoad]);
+  }, [searchTerm, maxPrepTime, maxServings, sortBy, initialLoad]);
 
   if (error) {
     return (
@@ -86,8 +88,8 @@ export default function Home() {
       <h1 className="text-4xl font-bold mb-8 text-center">All Recipes</h1>
 
       <div className="mb-8 bg-white rounded-lg shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="md:col-span-4">
             <div className="relative">
               <IoSearch
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -130,12 +132,33 @@ export default function Home() {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Sort By
+            </label>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#344e41] focus:border-transparent outline-none"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="time-asc">Shortest Time</option>
+              <option value="time-desc">Longest Time</option>
+              <option value="servings-asc">Least Servings</option>
+              <option value="servings-desc">Most Servings</option>
+              <option value="name-asc">Name (A-Z)</option>
+              <option value="name-desc">Name (Z-A)</option>
+            </select>
+          </div>
+
           <div className="flex items-end">
             <button
               onClick={() => {
                 setSearchTerm("");
                 setMaxPrepTime("");
                 setMaxServings("");
+                setSortBy("newest");
               }}
               className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
             >
@@ -210,6 +233,7 @@ export default function Home() {
               setSearchTerm("");
               setMaxPrepTime("");
               setMaxServings("");
+              setSortBy("newest");
             }}
             className="mt-4 px-6 py-2 bg-[#344e41] text-white rounded-lg hover:bg-[#2a3e33] transition-colors"
           >

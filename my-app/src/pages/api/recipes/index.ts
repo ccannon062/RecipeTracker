@@ -8,7 +8,7 @@ export default async function handler(
 ) {
   if (req.method === "GET") {
     try {
-      const { search, maxPrepTime, maxServings } = req.query;
+      const { search, maxPrepTime, maxServings, sortBy } = req.query;
 
       let sql = "SELECT DISTINCT r.* FROM RECIPE r";
       const params: any[] = [];
@@ -25,7 +25,7 @@ export default async function handler(
       }
 
       if (maxPrepTime) {
-        conditions.push("r.PrepTime <= ?");
+        conditions.push("r.TotalTime <= ?");
         params.push(parseInt(maxPrepTime as string));
       }
 
@@ -38,7 +38,34 @@ export default async function handler(
         sql += " WHERE " + conditions.join(" AND ");
       }
 
-      sql += " ORDER BY r.CreatedAt DESC";
+      let orderBy = "r.CreatedAt DESC";
+      switch (sortBy) {
+        case "oldest":
+          orderBy = "r.CreatedAt ASC";
+          break;
+        case "time-asc":
+          orderBy = "r.TotalTime ASC";
+          break;
+        case "time-desc":
+          orderBy = "r.TotalTime DESC";
+          break;
+        case "servings-asc":
+          orderBy = "r.Servings ASC";
+          break;
+        case "servings-desc":
+          orderBy = "r.Servings DESC";
+          break;
+        case "name-asc":
+          orderBy = "r.RecipeName ASC";
+          break;
+        case "name-desc":
+          orderBy = "r.RecipeName DESC";
+          break;
+        case "newest":
+        default:
+          orderBy = "r.CreatedAt DESC";
+      }
+      sql += ` ORDER BY ${orderBy}`;
 
       const results = await query<Recipe[]>(sql, params);
       res.status(200).json(results);
