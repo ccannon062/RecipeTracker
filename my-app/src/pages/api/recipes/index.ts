@@ -68,8 +68,20 @@ export default async function handler(
       sql += ` ORDER BY ${orderBy}`;
 
       const results = await query<Recipe[]>(sql, params);
+
+      for (const recipe of results) {
+        const categoryResults = await query<{ CategoryName: string }[]>(
+          `SELECT rc.CategoryName
+          FROM RECIPE_CATEGORIES rcs
+          JOIN RECIPE_CATEGORY rc ON rcs.CategoryID = rc.CategoryID
+          WHERE rcs.RecipeID = ?`,
+          [recipe.RecipeID]
+        );
+        (recipe as any).categories = categoryResults.map((c) => c.CategoryName);
+      }
+
       res.status(200).json(results);
-    } catch (error) {
+    } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   } else if (req.method === "POST") {
@@ -83,6 +95,7 @@ export default async function handler(
         Instructions,
         Photo_URL,
         ingredients,
+        categories,
       } = req.body;
 
       if (
@@ -99,9 +112,9 @@ export default async function handler(
       const CreatedBy = 1;
 
       const recipeResult = await query<any>(
-        `INSERT INTO RECIPE 
-         (RecipeName, RecipeDescription, PrepTime, CookTime, TotalTime, 
-          Servings, Instructions, Photo_URL, CreatedBy, CreatedAt) 
+        `INSERT INTO RECIPE
+         (RecipeName, RecipeDescription, PrepTime, CookTime, TotalTime,
+          Servings, Instructions, Photo_URL, CreatedBy, CreatedAt)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           RecipeName,
@@ -130,8 +143,8 @@ export default async function handler(
           }
 
           await query(
-            `INSERT INTO RECIPE_INGREDIENTS 
-             (RecipeID, IngredientID, Quantity, Unit) 
+            `INSERT INTO RECIPE_INGREDIENTS
+             (RecipeID, IngredientID, Quantity, Unit)
              VALUES (?, ?, ?, ?)`,
             [
               newRecipeID,
@@ -143,11 +156,20 @@ export default async function handler(
         }
       }
 
+      if (categories && Array.isArray(categories) && categories.length > 0) {
+        for (const categoryId of categories) {
+          await query(
+            "INSERT INTO RECIPE_CATEGORIES (RecipeID, CategoryID) VALUES (?, ?)",
+            [newRecipeID, categoryId]
+          );
+        }
+      }
+
       res.status(201).json({
         message: "Recipe created successfully",
         RecipeID: newRecipeID,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("POST /api/recipes error:", error);
       res.status(500).json({ error: error.message });
     }

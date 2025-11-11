@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { IoSearch } from "react-icons/io5";
+import { IoSearch, IoHeart, IoHeartOutline } from "react-icons/io5";
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -12,6 +12,10 @@ export default function Home() {
   const [maxServings, setMaxServings] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -77,6 +81,73 @@ export default function Home() {
 
     fetchRecentlyViewed();
   }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    const fetchFavorites = async () => {
+      try {
+        const response = await fetch("/api/favorites");
+        if (response.ok) {
+          const data = await response.json();
+          setFavoriteIds(data);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    };
+
+    fetchCategories();
+    fetchFavorites();
+  }, []);
+
+  const toggleFavorite = async (recipeId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const isFavorite = favoriteIds.includes(recipeId);
+
+    try {
+      const response = await fetch("/api/favorites", {
+        method: isFavorite ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipeId }),
+      });
+
+      if (response.ok) {
+        if (isFavorite) {
+          setFavoriteIds(favoriteIds.filter((id) => id !== recipeId));
+        } else {
+          setFavoriteIds([...favoriteIds, recipeId]);
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
+  const filteredRecipes = recipes.filter((recipe: any) => {
+    if (showFavoritesOnly && !favoriteIds.includes(recipe.RecipeID)) {
+      return false;
+    }
+    if (
+      selectedCategory &&
+      (!recipe.categories || !recipe.categories.includes(selectedCategory))
+    ) {
+      return false;
+    }
+    return true;
+  });
 
   if (error) {
     return (
@@ -167,6 +238,24 @@ export default function Home() {
 
           <div>
             <label className="block text-sm font-medium text-[#344e41] mb-2">
+              Category
+            </label>
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#588157] focus:border-transparent outline-none"
+            >
+              <option value="">All Categories</option>
+              {categories.map((cat: any) => (
+                <option key={cat.CategoryID} value={cat.CategoryName}>
+                  {cat.CategoryName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#344e41] mb-2">
               Max Prep Time (min)
             </label>
             <input
@@ -212,6 +301,20 @@ export default function Home() {
             </select>
           </div>
 
+          <div className="flex items-start">
+            <label className="flex items-center cursor-pointer mt-7">
+              <input
+                type="checkbox"
+                checked={showFavoritesOnly}
+                onChange={(e) => setShowFavoritesOnly(e.target.checked)}
+                className="w-4 h-4 text-[#588157] border-gray-300 rounded focus:ring-[#588157]"
+              />
+              <span className="ml-2 text-sm text-[#344e41]">
+                Favorites Only
+              </span>
+            </label>
+          </div>
+
           <div className="flex items-end">
             <button
               onClick={() => {
@@ -219,6 +322,8 @@ export default function Home() {
                 setMaxPrepTime("");
                 setMaxServings("");
                 setSortBy("newest");
+                setSelectedCategory("");
+                setShowFavoritesOnly(false);
               }}
               className="w-full px-4 py-2 bg-[#a3b18a] text-white rounded-lg hover:bg-[#588157] transition-colors"
             >
@@ -251,36 +356,63 @@ export default function Home() {
             />
           </svg>
         </div>
-      ) : recipes.length > 0 ? (
+      ) : filteredRecipes.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {recipes.map((recipe) => (
-            <Link key={recipe.RecipeID} href={`/recipes/${recipe.RecipeID}`}>
-              <div
-                key={recipe.RecipeID}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer h-full flex flex-col border border-gray-200"
+          {filteredRecipes.map((recipe: any) => (
+            <div
+              key={recipe.RecipeID}
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow h-full flex flex-col border border-gray-200 relative"
+            >
+              <button
+                onClick={(e) => toggleFavorite(recipe.RecipeID, e)}
+                className="absolute top-3 right-3 z-10 bg-white rounded-full p-2 shadow-lg hover:scale-110 transition-transform"
               >
+                {favoriteIds.includes(recipe.RecipeID) ? (
+                  <IoHeart className="text-red-500" size={24} />
+                ) : (
+                  <IoHeartOutline className="text-gray-600" size={24} />
+                )}
+              </button>
+              <Link href={`/recipes/${recipe.RecipeID}`}>
                 <img
                   src={
                     recipe.Photo_URL ||
                     "https://via.placeholder.com/400x300?text=No+Image"
                   }
                   alt={recipe.RecipeName}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-cover cursor-pointer"
                 />
-                <div className="p-4">
+                <div className="p-4 cursor-pointer">
                   <h2 className="text-xl font-bold mb-2 text-[#344e41]">
                     {recipe.RecipeName}
                   </h2>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                     {recipe.RecipeDescription}
                   </p>
+                  {recipe.categories && recipe.categories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {recipe.categories.slice(0, 3).map((category: string) => (
+                        <span
+                          key={category}
+                          className="px-2 py-1 bg-[#dad7cd] text-[#344e41] text-xs rounded-full"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                      {recipe.categories.length > 3 && (
+                        <span className="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full">
+                          +{recipe.categories.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>⏱️ {recipe.TotalTime} min</span>
                     <span>{recipe.Servings} servings</span>
                   </div>
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
         </div>
       ) : (
@@ -294,6 +426,8 @@ export default function Home() {
               setMaxPrepTime("");
               setMaxServings("");
               setSortBy("newest");
+              setSelectedCategory("");
+              setShowFavoritesOnly(false);
             }}
             className="mt-4 px-6 py-2 bg-[#344e41] text-white rounded-lg hover:bg-[#588157] transition-colors"
           >

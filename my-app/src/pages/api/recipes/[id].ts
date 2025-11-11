@@ -10,6 +10,8 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
+      const userId = 1;
+
       const recipeResult = await query<Recipe[]>(
         "SELECT * FROM RECIPE WHERE RecipeID = ?",
         [RecipeID]
@@ -19,10 +21,10 @@ export default async function handler(
       }
       const recipe = recipeResult[0];
       const ingredients = await query<IngredientWithDetails[]>(
-        `SELECT 
+        `SELECT
           i.IngredientID,
           i.IngredientName,
-          ri.Quantity, 
+          ri.Quantity,
           ri.Unit
         FROM RECIPE_INGREDIENTS ri
         JOIN INGREDIENT i ON ri.IngredientID = i.IngredientID
@@ -30,13 +32,29 @@ export default async function handler(
         [RecipeID]
       );
 
+      const categoryResults = await query<{ CategoryName: string }[]>(
+        `SELECT rc.CategoryName
+        FROM RECIPE_CATEGORIES rcs
+        JOIN RECIPE_CATEGORY rc ON rcs.CategoryID = rc.CategoryID
+        WHERE rcs.RecipeID = ?`,
+        [RecipeID]
+      );
+      const categories = categoryResults.map((c) => c.CategoryName);
+
+      const favoriteResult = await query<any[]>(
+        "SELECT 1 FROM USER_FAVORITES WHERE UserID = ? AND RecipeID = ?",
+        [userId, RecipeID]
+      );
+      const isFavorite = favoriteResult.length > 0;
+
       const recipeWithDetails: RecipeWithDetails = {
         ...recipe,
         ingredients: ingredients,
-        categories: [],
+        categories: categories,
+        isFavorite: isFavorite,
       };
       res.status(200).json(recipeWithDetails);
-    } catch (error) {
+    } catch (error: any) {
       console.error("GET /api/recipes/[id] error:", error);
       res.status(500).json({ error: error.message });
     }
@@ -51,6 +69,7 @@ export default async function handler(
         Instructions,
         Photo_URL,
         ingredients,
+        categories,
       } = req.body;
 
       if (
@@ -75,9 +94,9 @@ export default async function handler(
       const TotalTime = PrepTime + CookTime;
 
       await query(
-        `UPDATE RECIPE 
-         SET RecipeName = ?, RecipeDescription = ?, PrepTime = ?, CookTime = ?, 
-             TotalTime = ?, Servings = ?, Instructions = ?, Photo_URL = ?, 
+        `UPDATE RECIPE
+         SET RecipeName = ?, RecipeDescription = ?, PrepTime = ?, CookTime = ?,
+             TotalTime = ?, Servings = ?, Instructions = ?, Photo_URL = ?,
              UpdatedAt = NOW()
          WHERE RecipeID = ?`,
         [
@@ -110,8 +129,8 @@ export default async function handler(
             }
 
             await query(
-              `INSERT INTO RECIPE_INGREDIENTS 
-               (RecipeID, IngredientID, Quantity, Unit) 
+              `INSERT INTO RECIPE_INGREDIENTS
+               (RecipeID, IngredientID, Quantity, Unit)
                VALUES (?, ?, ?, ?)`,
               [
                 RecipeID,
@@ -124,11 +143,26 @@ export default async function handler(
         }
       }
 
+      if (categories && Array.isArray(categories)) {
+        await query("DELETE FROM RECIPE_CATEGORIES WHERE RecipeID = ?", [
+          RecipeID,
+        ]);
+
+        if (categories.length > 0) {
+          for (const categoryId of categories) {
+            await query(
+              "INSERT INTO RECIPE_CATEGORIES (RecipeID, CategoryID) VALUES (?, ?)",
+              [RecipeID, categoryId]
+            );
+          }
+        }
+      }
+
       res.status(200).json({
         message: "Recipe updated successfully",
         RecipeID: RecipeID,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("PUT /api/recipes/[id] error:", error);
       res.status(500).json({ error: error.message });
     }

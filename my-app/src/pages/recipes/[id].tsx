@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import { IoHeart, IoHeartOutline } from "react-icons/io5";
 
 export default function RecipeDetail() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function RecipeDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState();
   const [adjustedServings, setAdjustedServings] = useState(null);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -22,6 +24,7 @@ export default function RecipeDetail() {
         const result = await response.json();
         setRecipe(result);
         setAdjustedServings(result.Servings);
+        setIsFavorite(result.isFavorite || false);
 
         const recentlyViewed = JSON.parse(
           localStorage.getItem("recentlyViewed") || "[]"
@@ -40,6 +43,22 @@ export default function RecipeDetail() {
 
     fetchRecipe();
   }, [id]);
+
+  const toggleFavorite = async () => {
+    try {
+      const response = await fetch("/api/favorites", {
+        method: isFavorite ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recipeId: id }),
+      });
+
+      if (response.ok) {
+        setIsFavorite(!isFavorite);
+      }
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this recipe?")) {
@@ -109,10 +128,34 @@ export default function RecipeDetail() {
       </div>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6 border border-gray-200">
-          <h1 className="text-4xl font-bold mb-4">{recipe.RecipeName}</h1>
-          <p className="text-gray-600 text-lg mb-6">
+          <div className="flex justify-between items-start mb-4">
+            <h1 className="text-4xl font-bold flex-1">{recipe.RecipeName}</h1>
+            <button
+              onClick={toggleFavorite}
+              className="bg-white rounded-full p-3 shadow-lg hover:scale-110 transition-transform ml-4"
+            >
+              {isFavorite ? (
+                <IoHeart className="text-red-500" size={32} />
+              ) : (
+                <IoHeartOutline className="text-gray-600" size={32} />
+              )}
+            </button>
+          </div>
+          <p className="text-gray-600 text-lg mb-4">
             {recipe.RecipeDescription}
           </p>
+          {recipe.categories && recipe.categories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              {recipe.categories.map((category: string) => (
+                <span
+                  key={category}
+                  className="px-3 py-1 bg-[#dad7cd] text-[#344e41] text-sm rounded-full font-medium"
+                >
+                  {category}
+                </span>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-6 text-gray-700 mb-6">
             <div>
               <span className="font-semibold">Prep Time:</span>{" "}

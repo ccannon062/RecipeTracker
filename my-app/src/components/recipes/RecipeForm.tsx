@@ -20,9 +20,11 @@ export default function RecipeForm({
     Photo_URL: "",
     Instructions: "",
     ingredients: [{ IngredientID: "", Quantity: "", Unit: "" }],
+    categories: [] as number[],
   });
 
   const [availableIngredients, setAvailableIngredients] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
   const [error, setError] = useState();
 
   useEffect(() => {
@@ -39,11 +41,33 @@ export default function RecipeForm({
       }
     };
 
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        if (!response.ok) {
+          throw new Error(`HTTP error: ${response.status}`);
+        }
+        const result = await response.json();
+        setAvailableCategories(result);
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
     fetchIngredients();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
-    if (mode === "edit" && initialData) {
+    if (mode === "edit" && initialData && availableCategories.length > 0) {
+      const categoryIds =
+        initialData.categories?.map((catName: string) => {
+          const cat = availableCategories.find(
+            (c: any) => c.CategoryName === catName
+          );
+          return cat?.CategoryID;
+        }).filter((id: any) => id !== undefined) || [];
+
       setFormData({
         RecipeName: initialData.RecipeName || "",
         RecipeDescription: initialData.RecipeDescription || "",
@@ -60,9 +84,10 @@ export default function RecipeForm({
                 Unit: ing.Unit,
               }))
             : [{ IngredientID: "", Quantity: "", Unit: "" }],
+        categories: categoryIds,
       });
     }
-  }, [mode, initialData]);
+  }, [mode, initialData, availableCategories]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -103,6 +128,16 @@ export default function RecipeForm({
     setFormData({
       ...formData,
       ingredients: updatedIngredients,
+    });
+  };
+
+  const toggleCategory = (categoryId: number) => {
+    const isSelected = formData.categories.includes(categoryId);
+    setFormData({
+      ...formData,
+      categories: isSelected
+        ? formData.categories.filter((id) => id !== categoryId)
+        : [...formData.categories, categoryId],
     });
   };
 
@@ -208,6 +243,28 @@ export default function RecipeForm({
           className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-[#588157]"
           placeholder="https://example.com/image.jpg"
         />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-[#344e41] font-semibold mb-2">
+          Categories
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {availableCategories.map((category: any) => (
+            <button
+              key={category.CategoryID}
+              type="button"
+              onClick={() => toggleCategory(category.CategoryID)}
+              className={`px-3 py-2 rounded-lg border-2 transition-colors ${
+                formData.categories.includes(category.CategoryID)
+                  ? "bg-[#588157] text-white border-[#588157]"
+                  : "bg-white text-[#344e41] border-gray-300 hover:border-[#588157]"
+              }`}
+            >
+              {category.CategoryName}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mb-6">

@@ -53,9 +53,16 @@ export interface RecipeRating {
   CreatedAt: Date;
 }
 
+export interface UserFavorite {
+  UserID: number;
+  RecipeID: number;
+  CreatedAt: Date;
+}
+
 export interface RecipeWithDetails extends Recipe {
   ingredients: IngredientWithDetails[];
   categories?: string[];
+  isFavorite?: boolean;
 }
 
 export interface IngredientWithDetails {
