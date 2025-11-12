@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { IoSearch, IoHeart, IoHeartOutline } from "react-icons/io5";
 
 export default function Home() {
@@ -195,14 +196,18 @@ export default function Home() {
             {recentlyViewed.map((recipe) => (
               <Link key={recipe.RecipeID} href={`/recipes/${recipe.RecipeID}`}>
                 <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer border border-gray-200">
-                  <img
-                    src={
-                      recipe.Photo_URL ||
-                      "https://via.placeholder.com/300x200?text=No+Image"
-                    }
-                    alt={recipe.RecipeName}
-                    className="w-full h-32 object-cover"
-                  />
+                  <div className="relative w-full h-32">
+                    <Image
+                      src={
+                        recipe.Photo_URL ||
+                        "https://via.placeholder.com/300x200?text=No+Image"
+                      }
+                      alt={recipe.RecipeName}
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                      className="object-cover"
+                    />
+                  </div>
                   <div className="p-3">
                     <h3 className="font-semibold text-sm line-clamp-2 text-[#344e41]">
                       {recipe.RecipeName}
@@ -374,14 +379,18 @@ export default function Home() {
                 )}
               </button>
               <Link href={`/recipes/${recipe.RecipeID}`}>
-                <img
-                  src={
-                    recipe.Photo_URL ||
-                    "https://via.placeholder.com/400x300?text=No+Image"
-                  }
-                  alt={recipe.RecipeName}
-                  className="w-full h-48 object-cover cursor-pointer"
-                />
+                <div className="relative w-full h-48">
+                  <Image
+                    src={
+                      recipe.Photo_URL ||
+                      "https://via.placeholder.com/400x300?text=No+Image"
+                    }
+                    alt={recipe.RecipeName}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover cursor-pointer"
+                  />
+                </div>
                 <div className="p-4 cursor-pointer">
                   <h2 className="text-xl font-bold mb-2 text-[#344e41]">
                     {recipe.RecipeName}

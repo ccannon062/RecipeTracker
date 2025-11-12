@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
 
 export default function RecipeDetail() {
@@ -117,13 +118,16 @@ export default function RecipeDetail() {
   ) : recipe ? (
     <div className="min-h-screen bg-gray-50">
       <div className="w-full h-96 relative">
-        <img
+        <Image
           src={
             recipe.Photo_URL ||
             "https://via.placeholder.com/1200x400?text=No+Image"
           }
           alt={recipe.RecipeName}
-          className="w-full h-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
         />
       </div>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
