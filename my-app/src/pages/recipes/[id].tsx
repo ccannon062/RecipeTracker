@@ -2,6 +2,7 @@ import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { IoHeart, IoHeartOutline } from "react-icons/io5";
+import RatingComponent from "@/components/recipes/RatingComponent";
 
 export default function RecipeDetail() {
   const router = useRouter();
@@ -254,6 +255,11 @@ export default function RecipeDetail() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Ratings Section */}
+        <div className="mt-6">
+          <RatingComponent recipeId={Number(id)} />
         </div>
       </div>
     </div>

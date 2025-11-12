@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IoSearch, IoHeart, IoHeartOutline } from "react-icons/io5";
+import { IoSearch, IoHeart, IoHeartOutline, IoStar, IoStarHalf, IoStarOutline } from "react-icons/io5";
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -17,6 +17,24 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<IoStar key={`full-${i}`} className="text-yellow-500" size={16} />);
+    }
+    if (hasHalfStar) {
+      stars.push(<IoStarHalf key="half" className="text-yellow-500" size={16} />);
+    }
+    const remainingStars = 5 - stars.length;
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(<IoStarOutline key={`empty-${i}`} className="text-gray-400" size={16} />);
+    }
+    return stars;
+  };
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -415,10 +433,18 @@ export default function Home() {
                       )}
                     </div>
                   )}
-                  <div className="flex justify-between text-sm text-gray-600">
+                  <div className="flex justify-between items-center text-sm text-gray-600">
                     <span>⏱️ {recipe.TotalTime} min</span>
                     <span>{recipe.Servings} servings</span>
                   </div>
+                  {recipe.ratingCount > 0 && (
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="flex">{renderStars(Number(recipe.averageRating || 0))}</div>
+                      <span className="text-xs text-gray-600">
+                        ({recipe.ratingCount})
+                      </span>
+                    </div>
+                  )}
                 </div>
               </Link>
             </div>

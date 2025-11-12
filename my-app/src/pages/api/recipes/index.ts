@@ -78,6 +78,16 @@ export default async function handler(
           [recipe.RecipeID]
         );
         (recipe as any).categories = categoryResults.map((c) => c.CategoryName);
+
+        // Fetch average rating
+        const ratingResults = await query<{ avgRating: number; count: number }[]>(
+          `SELECT AVG(Rating) as avgRating, COUNT(*) as count
+           FROM RECIPE_RATING
+           WHERE RecipeID = ?`,
+          [recipe.RecipeID]
+        );
+        (recipe as any).averageRating = ratingResults[0]?.avgRating || 0;
+        (recipe as any).ratingCount = ratingResults[0]?.count || 0;
       }
 
       res.status(200).json(results);
