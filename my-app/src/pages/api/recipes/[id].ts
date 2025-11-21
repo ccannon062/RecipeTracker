@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { query } from "@/lib/db";
 import { Recipe, IngredientWithDetails, RecipeWithDetails } from "@/types";
+import { verifyToken } from "@/lib/auth";
+import { parse } from "cookie";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,7 +12,16 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
-      const userId = 1;
+      const cookies = parse(req.headers.cookie || "");
+      const token = cookies.token;
+      let userId = null;
+
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded) {
+          userId = decoded.userId;
+        }
+      }
 
       const recipeResult = await query<Recipe[]>(
         "SELECT * FROM RECIPE WHERE RecipeID = ?",
@@ -41,11 +52,14 @@ export default async function handler(
       );
       const categories = categoryResults.map((c) => c.CategoryName);
 
-      const favoriteResult = await query<any[]>(
-        "SELECT 1 FROM USER_FAVORITES WHERE UserID = ? AND RecipeID = ?",
-        [userId, RecipeID]
-      );
-      const isFavorite = favoriteResult.length > 0;
+      let isFavorite = false;
+      if (userId) {
+        const favoriteResult = await query<any[]>(
+          "SELECT 1 FROM USER_FAVORITES WHERE UserID = ? AND RecipeID = ?",
+          [userId, RecipeID]
+        );
+        isFavorite = favoriteResult.length > 0;
+      }
 
       const recipeWithDetails: RecipeWithDetails = {
         ...recipe,

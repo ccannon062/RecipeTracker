@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { IoSearch, IoHeart, IoHeartOutline, IoStar, IoStarHalf, IoStarOutline } from "react-icons/io5";
+import {
+  IoSearch,
+  IoHeart,
+  IoHeartOutline,
+  IoStar,
+  IoStarHalf,
+  IoStarOutline,
+} from "react-icons/io5";
 
 export default function Home() {
   const [recipes, setRecipes] = useState([]);
@@ -17,6 +24,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
 
   const renderStars = (rating: number) => {
     const stars = [];
@@ -24,14 +32,20 @@ export default function Home() {
     const hasHalfStar = rating % 1 >= 0.5;
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(<IoStar key={`full-${i}`} className="text-yellow-500" size={16} />);
+      stars.push(
+        <IoStar key={`full-${i}`} className="text-yellow-500" size={16} />
+      );
     }
     if (hasHalfStar) {
-      stars.push(<IoStarHalf key="half" className="text-yellow-500" size={16} />);
+      stars.push(
+        <IoStarHalf key="half" className="text-yellow-500" size={16} />
+      );
     }
     const remainingStars = 5 - stars.length;
     for (let i = 0; i < remainingStars; i++) {
-      stars.push(<IoStarOutline key={`empty-${i}`} className="text-gray-400" size={16} />);
+      stars.push(
+        <IoStarOutline key={`empty-${i}`} className="text-gray-400" size={16} />
+      );
     }
     return stars;
   };
@@ -217,13 +231,17 @@ export default function Home() {
                   <div className="relative w-full h-32">
                     <Image
                       src={
-                        recipe.Photo_URL ||
-                        "https://via.placeholder.com/300x200?text=No+Image"
+                        !recipe.Photo_URL || failedImages.has(recipe.RecipeID)
+                          ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop"
+                          : recipe.Photo_URL
                       }
                       alt={recipe.RecipeName}
                       fill
                       sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 20vw"
                       className="object-cover"
+                      onError={() => {
+                        setFailedImages((prev) => new Set(prev).add(recipe.RecipeID));
+                      }}
                     />
                   </div>
                   <div className="p-3">
@@ -400,13 +418,17 @@ export default function Home() {
                 <div className="relative w-full h-48">
                   <Image
                     src={
-                      recipe.Photo_URL ||
-                      "https://via.placeholder.com/400x300?text=No+Image"
+                      !recipe.Photo_URL || failedImages.has(recipe.RecipeID)
+                        ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop"
+                        : recipe.Photo_URL
                     }
                     alt={recipe.RecipeName}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                     className="object-cover cursor-pointer"
+                    onError={() => {
+                      setFailedImages((prev) => new Set(prev).add(recipe.RecipeID));
+                    }}
                   />
                 </div>
                 <div className="p-4 cursor-pointer">
@@ -439,7 +461,9 @@ export default function Home() {
                   </div>
                   {recipe.ratingCount > 0 && (
                     <div className="flex items-center gap-2 mt-2">
-                      <div className="flex">{renderStars(Number(recipe.averageRating || 0))}</div>
+                      <div className="flex">
+                        {renderStars(Number(recipe.averageRating || 0))}
+                      </div>
                       <span className="text-xs text-gray-600">
                         ({recipe.ratingCount})
                       </span>

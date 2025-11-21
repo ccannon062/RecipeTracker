@@ -1,6 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { query } from "@/lib/db";
 import { Recipe } from "@/types";
+import { verifyToken } from "@/lib/auth";
+import { parse } from "cookie";
 
 export default async function handler(
   req: NextApiRequest,
@@ -79,8 +81,9 @@ export default async function handler(
         );
         (recipe as any).categories = categoryResults.map((c) => c.CategoryName);
 
-        // Fetch average rating
-        const ratingResults = await query<{ avgRating: number; count: number }[]>(
+        const ratingResults = await query<
+          { avgRating: number; count: number }[]
+        >(
           `SELECT AVG(Rating) as avgRating, COUNT(*) as count
            FROM RECIPE_RATING
            WHERE RecipeID = ?`,
@@ -96,6 +99,18 @@ export default async function handler(
     }
   } else if (req.method === "POST") {
     try {
+      const cookies = parse(req.headers.cookie || "");
+      const token = cookies.token;
+
+      if (!token) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const decoded = verifyToken(token);
+      if (!decoded) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+
       const {
         RecipeName,
         RecipeDescription,
@@ -119,7 +134,7 @@ export default async function handler(
       }
 
       const TotalTime = PrepTime + CookTime;
-      const CreatedBy = 1;
+      const CreatedBy = decoded.userId;
 
       const recipeResult = await query<any>(
         `INSERT INTO RECIPE

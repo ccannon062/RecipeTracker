@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    minimumCacheTTL: 60,
+    unoptimized: false,
   },
 };
 

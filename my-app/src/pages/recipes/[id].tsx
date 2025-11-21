@@ -13,6 +13,7 @@ export default function RecipeDetail() {
   const [error, setError] = useState();
   const [adjustedServings, setAdjustedServings] = useState(null);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -121,14 +122,16 @@ export default function RecipeDetail() {
       <div className="w-full h-96 relative">
         <Image
           src={
-            recipe.Photo_URL ||
-            "https://via.placeholder.com/1200x400?text=No+Image"
+            !recipe.Photo_URL || imageError
+              ? "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=400&fit=crop"
+              : recipe.Photo_URL
           }
           alt={recipe.RecipeName}
           fill
           priority
           sizes="100vw"
           className="object-cover"
+          onError={() => setImageError(true)}
         />
       </div>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
@@ -224,7 +227,9 @@ export default function RecipeDetail() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h2 className="text-2xl font-bold mb-4 text-[#344e41]">Ingredients</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#344e41]">
+              Ingredients
+            </h2>
             {adjustedServings !== recipe.Servings && (
               <div className="mb-4 p-3 bg-[#dad7cd] border border-[#a3b18a] rounded-lg text-sm text-[#344e41]">
                 Quantities adjusted for {adjustedServings} servings (original:{" "}
@@ -248,7 +253,9 @@ export default function RecipeDetail() {
             </ul>
           </div>
           <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h2 className="text-2xl font-bold mb-4 text-[#344e41]">Instructions</h2>
+            <h2 className="text-2xl font-bold mb-4 text-[#344e41]">
+              Instructions
+            </h2>
             <div className="prose max-w-none">
               <p className="whitespace-pre-line text-gray-700 leading-relaxed">
                 {recipe.Instructions}
@@ -257,7 +264,6 @@ export default function RecipeDetail() {
           </div>
         </div>
 
-        {/* Ratings Section */}
         <div className="mt-6">
           <RatingComponent recipeId={Number(id)} />
         </div>
