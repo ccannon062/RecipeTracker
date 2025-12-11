@@ -1,0 +1,65 @@
+1. CRUD Operations available
+
+- CREATE: POST to /api/recipes - Creates a new recipe with ingredients and categories
+- READ: GET from /api/recipes and /api/recipes/[id] - Lets you retrieve either ALL recipes or a single recipe with the [id] param
+- UPDATE: PUT to /api/recipes/[id] allows you to update specific recipes, replace ingredients and categories
+- DELETE: /api/recipes/[id] removes recipes and cascades related tables
+
+Favorites (/api/favorites)
+- GET: Returns list of user's favorite recipe IDs (requires authentication)
+- POST: Adds recipe to favorites (requires authentication)
+- DELETE: Removes recipe from favorites (requires authentication)
+
+ User Authentication
+
+- Uses JWT tokens stored in cookies
+- Token verification on protected endpoints
+- 401 responses for unauthorized access
+
+2. Data Ordering Options
+
+From /api/recipes/index.ts:44-70:
+- newest - Recently created first (CreatedAt DESC) - default
+- oldest - Oldest created first (CreatedAt ASC)
+- time-asc - Shortest cooking time first (TotalTime ASC)
+- time-desc - Longest cooking time first (TotalTime DESC)
+- servings-asc - Fewest servings first (Servings ASC)
+- servings-desc - Most servings first (Servings DESC)
+- name-asc - Alphabetical A-Z (RecipeName ASC)
+- name-desc - Alphabetical Z-A (RecipeName DESC)
+
+3. Application Features
+
+Search & Filtering (index.tsx:244-356)
+
+- Text search - Searches recipe name, description, and ingredients
+- Time filter - Max prep/cook time
+- Servings filter - Max servings
+- Category filter - Filter by recipe categories
+- Favorites filter - Show only favorited recipes
+
+User Features
+
+- Favorites system - Heart icon to add/remove favorites (index.tsx:133-156, 389-398)
+- Recently viewed - Tracks last 10 viewed recipes in localStorage (index.tsx:210-242)
+- Recipe ratings - Star rating system with average rating display (index.tsx:21-43, 440-449)
+
+Recipe Management
+
+- Recipe scaling - Adjust servings with automatic ingredient quantity recalculation ([id].tsx:84-90, 177-207)
+- Full CRUD UI - Create, view, edit, delete recipes
+- Image fallback - Automatic placeholder images when URLs fail (index.tsx:242-244, 429-431)
+
+Data Display
+
+- Grid layouts - Responsive recipe cards
+- Category badges - Visual category tags on recipes
+- Rating display - Star ratings with count
+- Detailed view - Full recipe with ingredients, instructions, prep/cook times
+
+Technical Features
+
+- Authentication - JWT-based user sessions
+- Optimized images - Next.js Image optimization with error handling
+- Real-time filtering - 300ms debounced search
+- Error handling - Graceful fallbacks for missing/broken data

@@ -189,7 +189,7 @@ export default function RecipeDetail() {
                 >
                   −
                 </button>
-                <span className="font-semibold min-w-[2rem] text-center text-[#344e41]">
+                <span className="font-semibold min-w-8 text-center text-[#344e41]">
                   {adjustedServings}
                 </span>
                 <button

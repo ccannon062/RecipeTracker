@@ -173,11 +173,11 @@ export default function Home() {
     if (showFavoritesOnly && !favoriteIds.includes(recipe.RecipeID)) {
       return false;
     }
-    if (
-      selectedCategory &&
-      (!recipe.categories || !recipe.categories.includes(selectedCategory))
-    ) {
-      return false;
+    if (selectedCategory) {
+      console.log('Recipe:', recipe.RecipeName, 'Categories:', recipe.categories, 'Selected:', selectedCategory);
+      if (!recipe.categories || !recipe.categories.includes(selectedCategory)) {
+        return false;
+      }
     }
     return true;
   });
